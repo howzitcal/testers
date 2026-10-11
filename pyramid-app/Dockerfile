@@ -1,0 +1,21 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt setup.py MANIFEST.in ./
+COPY leads_app ./leads_app
+COPY production.ini ./
+
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir -e .
+
+RUN mkdir -p /app/data
+
+EXPOSE 6543
+VOLUME ["/app/data"]
+
+CMD ["pserve", "production.ini"]

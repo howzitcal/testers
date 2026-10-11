@@ -1,0 +1,12 @@
+pyramid==2.0.2
+pyramid_jinja2==2.10
+pyramid_tm==2.6
+transaction==4.0
+SQLAlchemy==2.0.36
+zope.sqlalchemy==3.1
+waitress==3.0.0
+apscheduler==3.10.4
+pastedeploy==3.1.0
+plaster_pastedeploy==1.0.1
+greenlet==3.1.1
+setuptools>=69.0,<81

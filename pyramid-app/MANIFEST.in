@@ -1,0 +1,3 @@
+recursive-include leads_app/templates *.jinja2
+include development.ini
+include requirements.txt

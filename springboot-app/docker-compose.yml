@@ -1,0 +1,15 @@
+services:
+  springboot-app:
+    build: .
+    container_name: springboot-leads
+    ports:
+      - "8001:8001"
+    volumes:
+      - springboot-data:/app/data
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:sqlite:/app/data/leads.db
+      SERVER_PORT: "8001"
+    restart: unless-stopped
+
+volumes:
+  springboot-data:

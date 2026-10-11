@@ -1,0 +1,9 @@
+.venv/
+**/data/
+**/target/
+**/__pycache__/
+**/*.pyc
+**/*.egg-info/
+.DS_Store
+.idea/
+*.iml

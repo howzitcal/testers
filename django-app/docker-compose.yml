@@ -1,0 +1,27 @@
+services:
+  django-web:
+    build: .
+    container_name: django-leads-web
+    command: ["web"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - django-data:/app/data
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+    restart: unless-stopped
+
+  django-qcluster:
+    build: .
+    container_name: django-leads-qcluster
+    command: ["qcluster"]
+    volumes:
+      - django-data:/app/data
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+    depends_on:
+      - django-web
+    restart: unless-stopped
+
+volumes:
+  django-data:

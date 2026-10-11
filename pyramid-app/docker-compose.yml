@@ -1,0 +1,12 @@
+services:
+  pyramid-app:
+    build: .
+    container_name: pyramid-leads
+    ports:
+      - "6543:6543"
+    volumes:
+      - pyramid-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  pyramid-data:

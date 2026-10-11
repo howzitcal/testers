@@ -1,0 +1,33 @@
+{% extends "base.jinja2" %}
+{% block title %}{{ title }} — Pyramid Leads{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">{{ title }}</h1>
+
+<form method="post" class="col-md-6">
+    <div class="mb-3">
+        <label class="form-label" for="name">Name</label>
+        <input class="form-control" id="name" name="name" required
+               value="{{ lead.name if lead else '' }}">
+        {% if errors.get('name') %}<div class="text-danger">{{ errors.name }}</div>{% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-control" type="email" id="email" name="email" required
+               value="{{ lead.email if lead else '' }}">
+        {% if errors.get('email') %}<div class="text-danger">{{ errors.email }}</div>{% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="status">Status</label>
+        <select class="form-select" id="status" name="status">
+            {% for s in statuses %}
+            <option value="{{ s }}"
+                {% if lead and lead.status == s %}selected{% elif not lead and s == 'new' %}selected{% endif %}>
+                {{ s }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a class="btn btn-link" href="{{ request.route_url('lead_list') }}">Cancel</a>
+</form>
+{% endblock %}

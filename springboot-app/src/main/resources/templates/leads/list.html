@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::section})}">
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Leads</h1>
+        <a class="btn btn-primary" th:href="@{/leads/new}">Add Lead</a>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="lead : ${leads}">
+                <td th:text="${lead.id}"></td>
+                <td th:text="${lead.name}"></td>
+                <td th:text="${lead.email}"></td>
+                <td><span class="badge text-bg-secondary" th:text="${lead.status}"></span></td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-primary" th:href="@{/leads/{id}/edit(id=${lead.id})}">Edit</a>
+                    <form class="d-inline" th:action="@{/leads/{id}/delete(id=${lead.id})}" method="post"
+                          onsubmit="return confirm('Delete this lead?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(leads)}">
+                <td colspan="5" class="text-muted">No leads yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</html>
