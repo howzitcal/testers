@@ -88,6 +88,8 @@ Q_CLUSTER = {
     "bulk": 5,
     "orm": "default",
     "catch_up": False,
+    "poll": 1.0,         # default 0.2 — slower poll = less idle CPU
+    "guard_cycle": 2.0,  # default 0.5
 }
 
 LOGGING = {
