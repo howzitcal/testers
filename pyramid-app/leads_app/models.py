@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Integer, String, create_engine, text
+from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine, event, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 from zope.sqlalchemy import register
 
@@ -24,13 +24,36 @@ class AuditLog(Base):
     message = Column(String(1000), nullable=False)
 
 
+class BackgroundJob(Base):
+    """SQLite-backed job queue shared by web and worker containers."""
+
+    __tablename__ = "background_jobs"
+
+    id = Column(Integer, primary_key=True)
+    job_type = Column(String(100), nullable=False)
+    payload = Column(Text, nullable=False, default="{}")
+    status = Column(String(20), nullable=False, default="pending")  # pending|running|done|failed
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    started_at = Column(DateTime, nullable=True)
+    finished_at = Column(DateTime, nullable=True)
+    error = Column(Text, nullable=True)
+
+
 def get_engine(db_url):
-    return create_engine(db_url)
+    engine = create_engine(db_url, connect_args={"check_same_thread": False, "timeout": 30})
+
+    @event.listens_for(engine, "connect")
+    def _set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=30000")
+        cursor.close()
+
+    return engine
 
 
 def get_session_factory(engine):
-    factory = sessionmaker(bind=engine)
-    return factory
+    return sessionmaker(bind=engine)
 
 
 def get_tm_session(session_factory, transaction_manager):

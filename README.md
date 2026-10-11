@@ -36,6 +36,8 @@ mise exec -- mvn spring-boot:run
 
 ## 2. Pyramid
 
+Pyramid uses **two processes** (same shape as Django): web + worker, sharing a SQLite job queue.
+
 ```bash
 cd pyramid-app
 python -m venv .venv
@@ -44,12 +46,18 @@ pip install -r requirements.txt
 pip install -e .
 mkdir -p data
 python -c "from leads_app.models import init_db; init_db('sqlite:///./data/leads.db')"
-pserve development.ini
+```
+
+Two terminals:
+
+```bash
+SQLALCHEMY_URL=sqlite:///./data/leads.db pserve development.ini
+SQLALCHEMY_URL=sqlite:///./data/leads.db SCHEDULER_JOBSTORE_URL=sqlite:///./data/apscheduler.db pyramid-worker
 ```
 
 - Open http://localhost:6543
-- Threaded worker logs welcome emails on create
-- APScheduler (SQLite job store) runs maintenance every 30 minutes
+- Lead create writes a `background_jobs` row (SQLite queue)
+- `pyramid-worker` polls the queue for mock welcome emails and runs APScheduler every 30 minutes
 
 ## 3. Django
 
@@ -80,19 +88,19 @@ Each app has its own `Dockerfile` and `docker-compose.yml`. Ports do not overlap
 | App | Compose directory | Host port | URL |
 |-----|-------------------|-----------|-----|
 | Spring Boot | `springboot-app/` | **8001** | http://localhost:8001 |
-| Pyramid | `pyramid-app/` | **6543** | http://localhost:6543 |
-| Django | `django-app/` | **8000** | http://localhost:8000 |
+| Pyramid | `pyramid-app/` | **6543** | http://localhost:6543 (web + worker) |
+| Django | `django-app/` | **8000** | http://localhost:8000 (web + qcluster) |
 
-Welcome email is **mocked** in every app (`[MOCK MAIL]` log lines only — no SMTP).
+Pyramid and Django both run **two containers** (web + background worker) for a fair resource comparison. Welcome email is **mocked** everywhere (`[MOCK MAIL]` logs only — no SMTP).
 
 ```bash
-# Spring Boot (port 8001)
+# Spring Boot (port 8001) — single container
 cd springboot-app && docker compose up -d --build
 
-# Pyramid (port 6543)
+# Pyramid (port 6543) — pyramid-web + pyramid-worker
 cd ../pyramid-app && docker compose up -d --build
 
-# Django web + qcluster (port 8000)
+# Django (port 8000) — django-web + django-qcluster
 cd ../django-app && docker compose up -d --build
 ```
 

@@ -1,6 +1,7 @@
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.view import view_config
 
+from .jobs import enqueue_welcome_email
 from .models import Lead
 
 STATUSES = ("new", "contacted", "qualified")
@@ -41,8 +42,7 @@ def lead_create(request):
     request.dbsession.add(lead)
     request.dbsession.flush()
 
-    worker = request.registry["welcome_worker"]
-    worker.enqueue(lead.id, lead.name, lead.email)
+    enqueue_welcome_email(request.dbsession, lead.id, lead.name, lead.email)
 
     return HTTPFound(location=request.route_url("lead_list", _query={"msg": "Lead created; welcome email queued."}))
 

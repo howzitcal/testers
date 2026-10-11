@@ -24,5 +24,8 @@ setup(
         "paste.app_factory": [
             "main = leads_app:main",
         ],
+        "console_scripts": [
+            "pyramid-worker = leads_app.worker:main",
+        ],
     },
 )
