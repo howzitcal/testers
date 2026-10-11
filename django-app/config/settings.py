@@ -78,14 +78,14 @@ EMAIL_PORT = 1025
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = "noreply@example.com"
 
-# Django-Q2 cluster backed by Django ORM / SQLite
+# Django-Q2 cluster backed by Django ORM / SQLite (tuned for small VPS)
 Q_CLUSTER = {
     "name": "leads",
-    "workers": 2,
+    "workers": 1,
     "timeout": 60,
     "retry": 120,
-    "queue_limit": 50,
-    "bulk": 10,
+    "queue_limit": 10,
+    "bulk": 5,
     "orm": "default",
     "catch_up": False,
 }

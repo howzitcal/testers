@@ -6,7 +6,13 @@ python manage.py migrate --noinput
 
 case "$1" in
   web)
-    exec python manage.py runserver 0.0.0.0:8000
+    exec gunicorn config.wsgi:application \
+      --bind 0.0.0.0:8000 \
+      --workers 1 \
+      --threads 2 \
+      --timeout 60 \
+      --access-logfile - \
+      --error-logfile -
     ;;
   qcluster)
     exec python manage.py qcluster

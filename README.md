@@ -72,14 +72,19 @@ python manage.py migrate
 Run the web server and Django-Q cluster (two terminals):
 
 ```bash
+# Local dev
 python manage.py runserver 8000
 python manage.py qcluster
+
+# Or mirror Docker (1 worker, 2 threads):
+gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 1 --threads 2
 ```
 
 - Open http://localhost:8000
-- Lead create enqueues `send_welcome_email` via Django-Q
+- Lead create enqueues `send_welcome_email` via Django-Q (`Q_CLUSTER` uses 1 worker)
 - A Django-Q schedule runs `leads.tasks.run_health_check` every 30 minutes
 - You can also run the health check manually: `python manage.py health_check`
+- Docker image is multi-stage slim with `PYTHONOPTIMIZE=1` and gunicorn
 
 ## Deploy with Docker Compose
 
