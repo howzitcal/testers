@@ -29,6 +29,9 @@ def run_health_check() -> str:
     log.info(message)
     return message
 
+def dummy_job() -> str:
+    return "dummy job"
+
 
 def ensure_health_check_schedule() -> None:
     """Register a repeating Django-Q schedule (every 30 minutes) if missing."""
@@ -38,6 +41,16 @@ def ensure_health_check_schedule() -> None:
             "func": "leads.tasks.run_health_check",
             "schedule_type": Schedule.MINUTES,
             # "minutes": 30,
+            "seconds": 1,
+            "repeats": -1,
+        },
+    )
+
+    Schedule.objects.update_or_create(
+        name="dummy_job_1m",
+        defaults={
+            "func": "leads.tasks.dummy_job",
+            "schedule_type": Schedule.MINUTES,
             "seconds": 1,
             "repeats": -1,
         },
