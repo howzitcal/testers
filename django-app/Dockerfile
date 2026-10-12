@@ -1,6 +1,5 @@
 # Build stage: install deps into a clean prefix
-# Official python:3.15-slim is not published yet; use the RC slim image.
-FROM python:3.15-rc-slim AS builder
+FROM python:3.14-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -15,7 +14,7 @@ RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install -r requirements.txt
 
 # Runtime stage: copy only the venv + app (no pip/cache/build junk)
-FROM python:3.15-rc-slim
+FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
