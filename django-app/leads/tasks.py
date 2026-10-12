@@ -39,7 +39,7 @@ def ensure_health_check_schedule() -> None:
         name="health_check_30m",
         defaults={
             "func": "leads.tasks.run_health_check",
-            "schedule_type": Schedule.MINUTES,
+            "schedule_type": Schedule.SECONDS,
             # "minutes": 30,
             "seconds": 1,
             "repeats": -1,
@@ -50,7 +50,7 @@ def ensure_health_check_schedule() -> None:
         name="dummy_job_1m",
         defaults={
             "func": "leads.tasks.dummy_job",
-            "schedule_type": Schedule.MINUTES,
+            "schedule_type": Schedule.SECONDS,
             "seconds": 1,
             "repeats": -1,
         },
