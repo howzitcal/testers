@@ -18,8 +18,10 @@ Install [mise](https://mise.jdx.dev/), then from this directory:
 mise install
 mise exec -- java -version
 mise exec -- mvn -version
-mise exec -- python --version
+mise exec -- python --version   # Python 3.15 for this repo
 ```
+
+Django Docker images use `python:3.15-rc-slim` until the stable `python:3.15-slim` tag is published.
 
 ## 1. Spring Boot
 
