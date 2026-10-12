@@ -37,7 +37,8 @@ def ensure_health_check_schedule() -> None:
         defaults={
             "func": "leads.tasks.run_health_check",
             "schedule_type": Schedule.MINUTES,
-            "minutes": 30,
+            # "minutes": 30,
+            "seconds": 1,
             "repeats": -1,
         },
     )

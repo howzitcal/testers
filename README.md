@@ -18,7 +18,7 @@ Install [mise](https://mise.jdx.dev/), then from this directory:
 mise install
 mise exec -- java -version
 mise exec -- mvn -version
-mise exec -- python --version   # Python 3.14 for this repo
+mise exec -- python --version   # Python 3.12 for this repo
 ```
 
 ## 1. Spring Boot
