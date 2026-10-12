@@ -25,7 +25,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN useradd --create-home --uid 1000 appuser \
-    && mkdir -p /app/data \
     && chown -R appuser:appuser /app
 
 COPY --from=builder /opt/venv /opt/venv
@@ -40,7 +39,6 @@ RUN chmod +x /docker-entrypoint.sh
 USER appuser
 
 EXPOSE 8000
-VOLUME ["/app/data"]
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["web"]

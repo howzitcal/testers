@@ -61,11 +61,22 @@ SQLALCHEMY_URL=sqlite:///./data/leads.db SCHEDULER_JOBSTORE_URL=sqlite:///./data
 
 ## 3. Django
 
+Django uses **MySQL** (via PyMySQL). Defaults match Docker Compose:
+
+| Variable | Default |
+|----------|---------|
+| `DB_HOST` | `host.docker.internal` |
+| `DB_PORT` | `3306` |
+| `DB_USERNAME` | `root` |
+| `DB_PASSWORD` | `password` |
+| `DB_NAME` | `django_leads` |
+
 ```bash
 cd django-app
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+export DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=password DB_NAME=django_leads
 python manage.py migrate
 ```
 
@@ -85,6 +96,7 @@ gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 1 --threads 2
 - A Django-Q schedule runs `leads.tasks.run_health_check` every 30 minutes
 - You can also run the health check manually: `python manage.py health_check`
 - Docker image is multi-stage slim with `PYTHONOPTIMIZE=1` and gunicorn
+- Containers call `CREATE DATABASE IF NOT EXISTS` on startup, then migrate
 
 ## Deploy with Docker Compose
 
@@ -116,10 +128,11 @@ docker compose logs -f
 docker compose down
 ```
 
-SQLite data is stored in named Docker volumes (`springboot-data`, `pyramid-data`, `django-data`).
+SQLite data for Spring Boot / Pyramid is in named volumes (`springboot-data`, `pyramid-data`). Django uses external MySQL (`DB_*` env vars; see `django-app/.env.example`).
 
 ## Notes
 
-- SQLite DB files live under each app’s `data/` directory (created at runtime where needed).
+- Spring Boot / Pyramid SQLite files live under each app’s `data/` directory (or Docker volume).
+- Django expects a reachable MySQL/MariaDB; override `DB_HOST` if the DB is another Compose service (e.g. `gemtech_mariadb_dev` network alias).
 - Use `mise exec -- <command>` if tools are not on your PATH after `mise install`.
 - Mail is mocked everywhere (`MockMailClient` / Django `locmem` backend) — safe for server demos.

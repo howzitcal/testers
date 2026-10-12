@@ -5,23 +5,30 @@ services:
     command: ["web"]
     ports:
       - "8000:8000"
-    volumes:
-      - django-data:/app/data
     environment:
       DJANGO_SETTINGS_MODULE: config.settings
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-django_leads}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
   django-qcluster:
     build: .
     container_name: django-leads-qcluster
     command: ["qcluster"]
-    volumes:
-      - django-data:/app/data
     environment:
       DJANGO_SETTINGS_MODULE: config.settings
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-django_leads}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - django-web
     restart: unless-stopped
-
-volumes:
-  django-data:
