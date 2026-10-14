@@ -1,4 +1,4 @@
-"""Standalone worker process: drains SQLite job queue + runs APScheduler.
+"""Standalone worker process: drains MySQL job queue + runs APScheduler.
 
 Mirrors Django's qcluster role so resource use can be compared fairly.
 """
@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 
 from .jobs import JOB_WELCOME_EMAIL
 from .mail import MockMailClient
-from .models import BackgroundJob, Base, get_engine, get_session_factory
+from .models import BackgroundJob, Base, get_engine, get_session_factory, resolve_db_url
 from .scheduler import start_scheduler
 
 logging.basicConfig(
@@ -23,14 +23,6 @@ logging.basicConfig(
 log = logging.getLogger("leads_app.worker")
 
 POLL_INTERVAL_SEC = 1.0
-
-
-def _db_url() -> str:
-    return os.environ.get("SQLALCHEMY_URL", "sqlite:////app/data/leads.db")
-
-
-def _jobstore_url() -> str:
-    return os.environ.get("SCHEDULER_JOBSTORE_URL", "sqlite:////app/data/apscheduler.db")
 
 
 def _claim_next_job(session):
@@ -68,13 +60,16 @@ def _process_job(session, job, mail: MockMailClient):
 
 
 def run_worker():
-    os.makedirs("data", exist_ok=True)
-    db_url = _db_url()
+    db_url = resolve_db_url()
     engine = get_engine(db_url)
     Base.metadata.create_all(engine)
     session_factory = get_session_factory(engine)
 
-    settings = {"scheduler.jobstore.url": _jobstore_url()}
+    jobstore_url = os.environ.get("SCHEDULER_JOBSTORE_URL") or db_url
+    settings = {
+        "sqlalchemy.url": db_url,
+        "scheduler.jobstore.url": jobstore_url,
+    }
     scheduler = start_scheduler(settings, engine)
 
     mail = MockMailClient()
@@ -88,7 +83,7 @@ def run_worker():
     signal.signal(signal.SIGTERM, _handle_signal)
     signal.signal(signal.SIGINT, _handle_signal)
 
-    log.info("Pyramid worker started (SQLite queue + APScheduler)")
+    log.info("Pyramid worker started (MySQL queue + APScheduler)")
 
     try:
         while not stop:

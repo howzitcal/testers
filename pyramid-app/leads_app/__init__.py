@@ -1,20 +1,14 @@
-import os
-
 from pyramid.config import Configurator
 
-from .models import Base, get_engine, get_session_factory, get_tm_session
+from .models import Base, get_engine, get_session_factory, get_tm_session, resolve_db_url
 
 
 def main(global_config, **settings):
     """Web-only app factory — no in-process worker or scheduler."""
-    os.makedirs("data", exist_ok=True)
+    db_url = resolve_db_url(settings)
+    settings["sqlalchemy.url"] = db_url
 
-    # Prefer env override (Docker) when present
-    db_url = os.environ.get("SQLALCHEMY_URL") or settings.get("sqlalchemy.url")
-    if db_url:
-        settings["sqlalchemy.url"] = db_url
-
-    engine = get_engine(settings["sqlalchemy.url"])
+    engine = get_engine(db_url)
     Base.metadata.create_all(engine)
     session_factory = get_session_factory(engine)
 

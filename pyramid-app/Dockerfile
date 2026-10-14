@@ -12,11 +12,9 @@ COPY production.ini docker-entrypoint.sh ./
 
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir -e . \
-    && chmod +x /app/docker-entrypoint.sh \
-    && mkdir -p /app/data
+    && chmod +x /app/docker-entrypoint.sh
 
 EXPOSE 6543
-VOLUME ["/app/data"]
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["web"]

@@ -6,6 +6,7 @@ requires = [
     "pyramid_tm",
     "SQLAlchemy",
     "zope.sqlalchemy",
+    "PyMySQL",
     "waitress",
     "apscheduler",
     "pastedeploy",

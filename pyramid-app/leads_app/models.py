@@ -1,6 +1,8 @@
+import os
 from datetime import datetime, timezone
+from urllib.parse import quote_plus
 
-from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine, event, text
+from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 from zope.sqlalchemy import register
 
@@ -25,7 +27,7 @@ class AuditLog(Base):
 
 
 class BackgroundJob(Base):
-    """SQLite-backed job queue shared by web and worker containers."""
+    """MySQL-backed job queue shared by web and worker containers."""
 
     __tablename__ = "background_jobs"
 
@@ -39,17 +41,44 @@ class BackgroundJob(Base):
     error = Column(Text, nullable=True)
 
 
-def get_engine(db_url):
-    engine = create_engine(db_url, connect_args={"check_same_thread": False, "timeout": 30})
+def build_db_url(
+    name: str | None = None,
+    user: str | None = None,
+    password: str | None = None,
+    host: str | None = None,
+    port: str | None = None,
+) -> str:
+    """Build a MySQL SQLAlchemy URL from the same env vars Django uses."""
+    db_name = name or os.environ.get("DB_NAME", "pyramid_leads")
+    db_user = user or os.environ.get("DB_USERNAME", "root")
+    db_password = password or os.environ.get("DB_PASSWORD", "password")
+    db_host = host or os.environ.get("DB_HOST", "host.docker.internal")
+    db_port = port or os.environ.get("DB_PORT", "3306")
+    return (
+        f"mysql+pymysql://{quote_plus(db_user)}:{quote_plus(db_password)}"
+        f"@{db_host}:{db_port}/{db_name}?charset=utf8mb4"
+    )
 
-    @event.listens_for(engine, "connect")
-    def _set_sqlite_pragma(dbapi_connection, connection_record):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
-        cursor.execute("PRAGMA busy_timeout=30000")
-        cursor.close()
 
-    return engine
+def resolve_db_url(settings: dict | None = None) -> str:
+    """Prefer SQLALCHEMY_URL, else Django-style DB_* env, else ini setting."""
+    if os.environ.get("SQLALCHEMY_URL"):
+        return os.environ["SQLALCHEMY_URL"]
+    if any(os.environ.get(k) for k in ("DB_NAME", "DB_HOST", "DB_USERNAME", "DB_PASSWORD")):
+        return build_db_url()
+    if settings and settings.get("sqlalchemy.url"):
+        return settings["sqlalchemy.url"]
+    return build_db_url()
+
+
+def get_engine(db_url: str):
+    kwargs = {}
+    if db_url.startswith("sqlite"):
+        kwargs["connect_args"] = {"check_same_thread": False, "timeout": 30}
+    else:
+        kwargs["pool_pre_ping"] = True
+        kwargs["pool_recycle"] = 3600
+    return create_engine(db_url, **kwargs)
 
 
 def get_session_factory(engine):
@@ -62,11 +91,8 @@ def get_tm_session(session_factory, transaction_manager):
     return dbsession
 
 
-def init_db(db_url="sqlite:///./data/leads.db"):
-    import os
-
-    os.makedirs("data", exist_ok=True)
-    engine = get_engine(db_url)
+def init_db(db_url: str | None = None):
+    engine = get_engine(db_url or build_db_url())
     Base.metadata.create_all(engine)
     with engine.connect() as conn:
         conn.execute(text("SELECT 1"))
