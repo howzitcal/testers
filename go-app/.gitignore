@@ -1,0 +1,5 @@
+/bin/
+/leads
+*.exe
+.DS_Store
+.env
