@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "web": "deno run -A main.ts web",
+    "worker": "deno run -A main.ts worker"
+  },
+  "imports": {
+    "mysql2/promise": "npm:mysql2@3.14.1/promise"
+  },
+  "nodeModulesDir": "auto"
+}

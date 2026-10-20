@@ -1,6 +1,6 @@
 # POC Lead Management Apps
 
-Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
+Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go, Deno). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
 
 Welcome emails are **simulated** (logged only; no SMTP).
 
@@ -10,6 +10,7 @@ Welcome emails are **simulated** (logged only; no SMTP).
 | Pyramid | `pyramid-app/` | http://localhost:6543 |
 | Django | `django-app/` | http://localhost:8000 |
 | Go | `go-app/` | http://localhost:8003 |
+| Deno | `deno-app/` | http://localhost:8004 |
 
 ## Prerequisites
 
@@ -121,6 +122,28 @@ mise exec -- go run ./cmd/leads worker   # queue + schedules
 - Worker drains the queue and runs `health_check` + `dummy_job` every 1s
 - Startup ensures the MySQL database exists, then creates tables
 
+## 5. Deno
+
+Deno uses the **same shared MySQL** as Django/Go (`DB_*` env vars). Defaults:
+
+| Variable | Default |
+|----------|---------|
+| `DB_HOST` | `host.docker.internal` |
+| `DB_PORT` | `3306` |
+| `DB_USERNAME` | `root` |
+| `DB_PASSWORD` | `password` |
+| `DB_NAME` | `deno_leads` |
+
+```bash
+cd deno-app
+mise exec -- deno task web      # http://localhost:8004
+mise exec -- deno task worker   # queue + schedules
+```
+
+- Lead create enqueues a `welcome_email` row in `background_jobs`
+- Worker drains the queue and runs `health_check` + `dummy_job` every 1s
+- Startup ensures the MySQL database exists, then creates tables
+
 ## Deploy with Docker Compose
 
 Each app has its own `Dockerfile` and `docker-compose.yml`. Ports do not overlap, so all can run on one host.
@@ -131,8 +154,9 @@ Each app has its own `Dockerfile` and `docker-compose.yml`. Ports do not overlap
 | Pyramid | `pyramid-app/` | **6543** | http://localhost:6543 (web + worker) |
 | Django | `django-app/` | **8000** | http://localhost:8000 (web + qcluster) |
 | Go | `go-app/` | **8003** | http://localhost:8003 (web + worker) |
+| Deno | `deno-app/` | **8004** | http://localhost:8004 (web + worker) |
 
-Pyramid, Django, and Go run **two containers** (web + background worker) for a fair resource comparison. Welcome email is **mocked** everywhere (`[MOCK MAIL]` logs only — no SMTP).
+Pyramid, Django, Go, and Deno run **two containers** (web + background worker) for a fair resource comparison. Welcome email is **mocked** everywhere (`[MOCK MAIL]` logs only — no SMTP).
 
 ```bash
 # Spring Boot (port 8001) — single container
@@ -146,6 +170,9 @@ cd ../django-app && docker compose up -d --build
 
 # Go (port 8003) — go-web + go-worker
 cd ../go-app && docker compose up -d --build
+
+# Deno (port 8004) — deno-web + deno-worker
+cd ../deno-app && docker compose up -d --build
 ```
 
 Useful commands (from each app directory):
@@ -155,11 +182,11 @@ docker compose logs -f
 docker compose down
 ```
 
-SQLite data for Spring Boot / Pyramid is in named volumes (`springboot-data`, `pyramid-data`). Django and Go use the shared external MySQL (`DB_*` env vars; see each app’s `.env.example`).
+SQLite data for Spring Boot / Pyramid is in named volumes (`springboot-data`, `pyramid-data`). Django, Go, and Deno use the shared external MySQL (`DB_*` env vars; see each app’s `.env.example`).
 
 ## Notes
 
 - Spring Boot / Pyramid SQLite files live under each app’s `data/` directory (or Docker volume).
-- Django / Go expect a reachable MySQL/MariaDB; override `DB_HOST` if the DB is another Compose service (e.g. `gemtech_mariadb_dev` network alias).
+- Django / Go / Deno expect a reachable MySQL/MariaDB; override `DB_HOST` if the DB is another Compose service (e.g. `gemtech_mariadb_dev` network alias).
 - Use `mise exec -- <command>` if tools are not on your PATH after `mise install`.
 - Mail is mocked everywhere (`MockMailClient` / Django `locmem` backend) — safe for server demos.

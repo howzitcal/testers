@@ -1,0 +1,33 @@
+services:
+  deno-web:
+    build: .
+    container_name: deno-leads-web
+    command: ["web"]
+    ports:
+      - "8004:8004"
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-deno_leads}
+      HTTP_PORT: "8004"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  deno-worker:
+    build: .
+    container_name: deno-leads-worker
+    command: ["worker"]
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-deno_leads}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - deno-web
+    restart: unless-stopped

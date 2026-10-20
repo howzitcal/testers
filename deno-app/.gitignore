@@ -1,0 +1,4 @@
+node_modules/
+.deno/
+.env
+.DS_Store
