@@ -1,0 +1,33 @@
+services:
+  bun-web:
+    build: .
+    container_name: bun-leads-web
+    command: ["web"]
+    ports:
+      - "8005:8005"
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-bun_leads}
+      HTTP_PORT: "8005"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  bun-worker:
+    build: .
+    container_name: bun-leads-worker
+    command: ["worker"]
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-bun_leads}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - bun-web
+    restart: unless-stopped

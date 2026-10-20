@@ -1,6 +1,6 @@
 # POC Lead Management Apps
 
-Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go, Deno). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
+Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go, Deno, Bun). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
 
 Welcome emails are **simulated** (logged only; no SMTP).
 
@@ -11,6 +11,7 @@ Welcome emails are **simulated** (logged only; no SMTP).
 | Django | `django-app/` | http://localhost:8000 |
 | Go | `go-app/` | http://localhost:8003 |
 | Deno | `deno-app/` | http://localhost:8004 |
+| Bun | `bun-app/` | http://localhost:8005 |
 
 ## Prerequisites
 
