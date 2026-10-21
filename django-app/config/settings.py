@@ -7,10 +7,10 @@ SECRET_KEY = "django-insecure-poc-dev-only-change-me"
 DEBUG = False
 ALLOWED_HOSTS = ["*"]
 
-    # "django.contrib.auth",
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.sessions",
+    "django.contrib.auth",
+    # "django.contrib.admin",
+    # "django.contrib.sessions",
     "django.contrib.contenttypes",
     "django.contrib.messages",
     "django.contrib.staticfiles",
