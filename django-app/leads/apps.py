@@ -8,7 +8,7 @@ class LeadsConfig(AppConfig):
     def ready(self):
         from . import signals  # noqa: F401
 
-        # Ensure 1s schedules exist even without a fresh migrate
+        # Ensure 10s schedules exist even without a fresh migrate
         try:
             from .tasks import ensure_health_check_schedule
 

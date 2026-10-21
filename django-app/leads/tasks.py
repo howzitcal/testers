@@ -1,5 +1,6 @@
 import logging
 import time
+from datetime import datetime, timezone
 
 from django_q.models import Schedule
 
@@ -31,35 +32,45 @@ def run_health_check() -> str:
 
 
 def dummy_job() -> str:
-    log.info("dummy job")
-    return "dummy job"
+    now = datetime.now(timezone.utc).isoformat()
+    message = f"dummy job at {now}"
+    log.info(message)
+    return message
 
 
 def ensure_health_check_schedule() -> None:
-    """Register repeating Django-Q schedules that fire every 1 second."""
-    # django-q2 has no SECONDS type; use 6-field cron (requires croniter).
-    every_second = "* * * * * *"
+    """Register repeating Django-Q schedules that fire every 10 seconds."""
+    # django-q2 has no sub-minute type; use 6-field cron (requires croniter).
+    every_10s = "*/10 * * * * *"
 
-    # Drop legacy names from earlier broken SECONDS attempts / 30m schedules.
-    Schedule.objects.filter(name__in=("health_check_30m", "dummy_job_1m")).delete()
+    # Drop legacy schedule names.
+    Schedule.objects.filter(
+        name__in=(
+            "health_check_30m",
+            "health_check_1s",
+            "health_check_1m",
+            "dummy_job_1s",
+            "dummy_job_1m",
+        )
+    ).delete()
 
     Schedule.objects.update_or_create(
-        name="health_check_1s",
+        name="health_check_10s",
         defaults={
             "func": "leads.tasks.run_health_check",
             "schedule_type": Schedule.CRON,
-            "cron": every_second,
+            "cron": every_10s,
             "minutes": None,
             "repeats": -1,
         },
     )
 
     Schedule.objects.update_or_create(
-        name="dummy_job_1s",
+        name="dummy_job_10s",
         defaults={
             "func": "leads.tasks.dummy_job",
             "schedule_type": Schedule.CRON,
-            "cron": every_second,
+            "cron": every_10s,
             "minutes": None,
             "repeats": -1,
         },

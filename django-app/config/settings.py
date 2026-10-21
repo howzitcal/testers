@@ -90,13 +90,13 @@ Q_CLUSTER = {
     "workers": 1,
     "timeout": 60,
     "retry": 120,
-    "queue_limit": 50,
+    "queue_limit": 20,
     "bulk": 5,
     "orm": "default",
     "catch_up": False,
-    # Keep scheduler/worker responsive enough for 1s cron schedules
-    "poll": 0.5,
-    "guard_cycle": 0.5,
+    # Responsive enough for 10s cron schedules
+    "poll": 1.0,
+    "guard_cycle": 1.0,
 }
 
 LOGGING = {
