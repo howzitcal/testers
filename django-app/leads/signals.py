@@ -7,7 +7,7 @@ def create_health_check_schedule(sender, **kwargs):
     if sender.name != "leads":
         return
     try:
-        from .tasks import ensure_health_check_schedule,
+        from .tasks import ensure_health_check_schedule
 
         ensure_health_check_schedule()
     except Exception:
