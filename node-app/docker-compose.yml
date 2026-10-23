@@ -1,0 +1,33 @@
+services:
+  node-web:
+    build: .
+    container_name: node-leads-web
+    command: ["web"]
+    ports:
+      - "8007:8007"
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-node_leads}
+      HTTP_PORT: "8007"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  node-worker:
+    build: .
+    container_name: node-leads-worker
+    command: ["worker"]
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-node_leads}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - node-web
+    restart: unless-stopped

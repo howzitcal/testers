@@ -1,0 +1,33 @@
+services:
+  rust-web:
+    build: .
+    container_name: rust-leads-web
+    command: ["web"]
+    ports:
+      - "8006:8006"
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-rust_leads}
+      HTTP_PORT: "8006"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  rust-worker:
+    build: .
+    container_name: rust-leads-worker
+    command: ["worker"]
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-rust_leads}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - rust-web
+    restart: unless-stopped

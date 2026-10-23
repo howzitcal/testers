@@ -1,6 +1,6 @@
 # POC Lead Management Apps
 
-Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go, Deno, Bun). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
+Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go, Deno, Bun, Rust, Node.js). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
 
 Welcome emails are **simulated** (logged only; no SMTP).
 
@@ -12,6 +12,8 @@ Welcome emails are **simulated** (logged only; no SMTP).
 | Go | `go-app/` | http://localhost:8003 |
 | Deno | `deno-app/` | http://localhost:8004 |
 | Bun | `bun-app/` | http://localhost:8005 |
+| Rust | `rust-app/` | http://localhost:8006 |
+| Node.js | `node-app/` | http://localhost:8007 |
 
 ## Prerequisites
 
@@ -181,6 +183,43 @@ mise exec -- bun run worker   # queue + schedules
 - Worker drains the queue and runs `health_check` + `dummy_job` every 1s
 - Startup ensures the MySQL database exists, then creates tables
 
+## 7. Rust
+
+Rust uses **Axum + SQLx** and the **same shared MySQL** (`DB_*` env vars). Defaults:
+
+| Variable | Default |
+|----------|---------|
+| `DB_HOST` | `host.docker.internal` |
+| `DB_PORT` | `3306` |
+| `DB_USERNAME` | `root` |
+| `DB_PASSWORD` | `password` |
+| `DB_NAME` | `rust_leads` |
+
+```bash
+cd rust-app
+mise exec -- cargo run --release -- web     # http://localhost:8006
+mise exec -- cargo run --release -- worker  # queue + schedules
+```
+
+## 8. Node.js
+
+Node uses plain **`.js`** (`node:http` + `mysql2`) and the **same shared MySQL**. Defaults:
+
+| Variable | Default |
+|----------|---------|
+| `DB_HOST` | `host.docker.internal` |
+| `DB_PORT` | `3306` |
+| `DB_USERNAME` | `root` |
+| `DB_PASSWORD` | `password` |
+| `DB_NAME` | `node_leads` |
+
+```bash
+cd node-app
+mise exec -- npm install
+mise exec -- npm run web      # http://localhost:8007
+mise exec -- npm run worker
+```
+
 ## Deploy with Docker Compose
 
 Each app has its own `Dockerfile` and `docker-compose.yml`. Ports do not overlap, so all can run on one host.
@@ -193,8 +232,10 @@ Each app has its own `Dockerfile` and `docker-compose.yml`. Ports do not overlap
 | Go | `go-app/` | **8003** | http://localhost:8003 (web + worker) |
 | Deno | `deno-app/` | **8004** | http://localhost:8004 (web + worker) |
 | Bun | `bun-app/` | **8005** | http://localhost:8005 (web + worker) |
+| Rust | `rust-app/` | **8006** | http://localhost:8006 (web + worker) |
+| Node.js | `node-app/` | **8007** | http://localhost:8007 (web + worker) |
 
-Pyramid, Django, Go, Deno, and Bun run **two containers** (web + background worker) for a fair resource comparison. Welcome email is **mocked** everywhere (`[MOCK MAIL]` logs only — no SMTP).
+Most stacks run **two containers** (web + background worker) for a fair resource comparison. Welcome email is **mocked** everywhere (`[MOCK MAIL]` logs only — no SMTP).
 
 ```bash
 # Spring Boot (port 8001) — single container
@@ -214,6 +255,12 @@ cd ../deno-app && docker compose up -d --build
 
 # Bun (port 8005) — bun-web + bun-worker
 cd ../bun-app && docker compose up -d --build
+
+# Rust (port 8006) — rust-web + rust-worker
+cd ../rust-app && docker compose up -d --build
+
+# Node.js (port 8007) — node-web + node-worker
+cd ../node-app && docker compose up -d --build
 ```
 
 Useful commands (from each app directory):
@@ -223,11 +270,11 @@ docker compose logs -f
 docker compose down
 ```
 
-SQLite data for Spring Boot / Pyramid is in named volumes (`springboot-data`, `pyramid-data`). Django, Go, Deno, and Bun use the shared external MySQL (`DB_*` env vars; see each app’s `.env.example`).
+SQLite data for Spring Boot / Pyramid is in named volumes (`springboot-data`, `pyramid-data`). Django, Go, Deno, Bun, Rust, and Node use the shared external MySQL (`DB_*` env vars; see each app’s `.env.example`).
 
 ## Notes
 
 - Spring Boot / Pyramid SQLite files live under each app’s `data/` directory (or Docker volume).
-- Django / Go / Deno / Bun expect a reachable MySQL/MariaDB; override `DB_HOST` if the DB is another Compose service (e.g. `gemtech_mariadb_dev` network alias).
+- Django / Go / Deno / Bun / Rust / Node expect a reachable MySQL/MariaDB; override `DB_HOST` if the DB is another Compose service (e.g. `gemtech_mariadb_dev` network alias).
 - Use `mise exec -- <command>` if tools are not on your PATH after `mise install`.
 - Mail is mocked everywhere (`MockMailClient` / Django `locmem` backend) — safe for server demos.

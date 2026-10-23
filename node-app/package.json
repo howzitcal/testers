@@ -1,0 +1,13 @@
+{
+  "name": "node-leads",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "web": "node main.js web",
+    "worker": "node main.js worker"
+  },
+  "dependencies": {
+    "mysql2": "3.14.1"
+  }
+}
