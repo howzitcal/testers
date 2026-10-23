@@ -1,0 +1,41 @@
+# PyPy stack — run alongside the CPython compose without replacing it:
+#   docker compose -f docker-compose.pypy.yml up -d --build
+services:
+  django-pypy-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.pypy
+    container_name: django-leads-pypy-web
+    command: ["web"]
+    ports:
+      - "8010:8010"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      PORT: "8010"
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME_PYPY:-django_leads_pypy}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  django-pypy-qcluster:
+    build:
+      context: .
+      dockerfile: Dockerfile.pypy
+    container_name: django-leads-pypy-qcluster
+    command: ["qcluster"]
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME_PYPY:-django_leads_pypy}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - django-pypy-web
+    restart: unless-stopped

@@ -101,6 +101,19 @@ gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 1 --threads 2
 - Docker image is multi-stage slim with `PYTHONOPTIMIZE=1` and gunicorn
 - Containers call `CREATE DATABASE IF NOT EXISTS` on startup, then migrate
 
+### Django on PyPy (optional, parallel stack)
+
+Same app, PyPy 3.12 image, separate compose file (CPython stack unchanged):
+
+```bash
+cd django-app
+docker compose -f docker-compose.pypy.yml up -d --build
+```
+
+- http://localhost:8010
+- Containers: `django-leads-pypy-web` + `django-leads-pypy-qcluster`
+- DB default: `django_leads_pypy` (override with `DB_NAME_PYPY`)
+
 ## 4. Go
 
 Go uses the **same shared MySQL** as Django (`DB_*` env vars). Defaults:

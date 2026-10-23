@@ -36,10 +36,12 @@ PY
 
 python manage.py migrate --noinput
 
+PORT="${PORT:-8000}"
+
 case "$1" in
   web)
     exec gunicorn config.wsgi:application \
-      --bind 0.0.0.0:8000 \
+      --bind "0.0.0.0:${PORT}" \
       --workers 1 \
       --threads 2 \
       --timeout 60 \
