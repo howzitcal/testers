@@ -1,4 +1,4 @@
-FROM openresty/openresty:10.0.2.1-0-jammy
+FROM openresty/openresty:1.31.1.1-5-jammy
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       luarocks \
