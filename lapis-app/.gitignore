@@ -1,0 +1,5 @@
+logs/
+nginx.conf.compiled
+.env
+.DS_Store
+*.rock

@@ -1,0 +1,27 @@
+<h1 class="h3 mb-3"><%= title %></h1>
+<form method="post" class="col-md-6">
+  <div class="mb-3">
+    <label class="form-label" for="id_name">Name</label>
+    <input class="form-control" type="text" name="name" id="id_name" value="<%= lead and lead.name or '' %>">
+    <% if errors and errors.name then %>
+      <div class="text-danger"><%= errors.name %></div>
+    <% end %>
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="id_email">Email</label>
+    <input class="form-control" type="email" name="email" id="id_email" value="<%= lead and lead.email or '' %>">
+    <% if errors and errors.email then %>
+      <div class="text-danger"><%= errors.email %></div>
+    <% end %>
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="id_status">Status</label>
+    <select class="form-select" name="status" id="id_status">
+      <% for _, s in ipairs(statuses) do %>
+        <option value="<%= s %>" <%= (lead and lead.status == s) and "selected" or "" %>><%= s %></option>
+      <% end %>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-secondary">Save</button>
+  <a class="btn btn-link" href="/">Cancel</a>
+</form>

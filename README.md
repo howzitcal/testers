@@ -1,6 +1,6 @@
 # POC Lead Management Apps
 
-Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go, Deno, Bun, Rust, Node.js, .NET). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
+Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go, Deno, Bun, Rust, Node.js, .NET, Lapis). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
 
 Welcome emails are **simulated** (logged only; no SMTP).
 
@@ -15,6 +15,7 @@ Welcome emails are **simulated** (logged only; no SMTP).
 | Rust | `rust-app/` | http://localhost:8006 |
 | Node.js | `node-app/` | http://localhost:8007 |
 | .NET 10 | `dotnet-app/` | http://localhost:8008 |
+| Lapis (Lua) | `lapis-app/` | http://localhost:8009 |
 
 ## Prerequisites
 
@@ -239,6 +240,27 @@ mise exec -- dotnet run -- web      # http://localhost:8008
 mise exec -- dotnet run -- worker
 ```
 
+## 10. Lapis (Lua / OpenResty)
+
+Lapis on OpenResty with MySQL (`lua-resty-mysql` / Lapis models). Same shared MySQL (`DB_*`). Defaults:
+
+| Variable | Default |
+|----------|---------|
+| `DB_HOST` | `host.docker.internal` |
+| `DB_PORT` | `3306` |
+| `DB_USERNAME` | `root` |
+| `DB_PASSWORD` | `password` |
+| `DB_NAME` | `lapis_leads` |
+
+```bash
+cd lapis-app
+docker compose up -d --build
+# → http://localhost:8009
+```
+
+- Web: `lapis server` (OpenResty)
+- Worker: `resty worker.lua` (queue + schedules every 1s)
+
 ## Deploy with Docker Compose
 
 Each app has its own `Dockerfile` and `docker-compose.yml`. Ports do not overlap, so all can run on one host.
@@ -254,6 +276,7 @@ Each app has its own `Dockerfile` and `docker-compose.yml`. Ports do not overlap
 | Rust | `rust-app/` | **8006** | http://localhost:8006 (web + worker) |
 | Node.js | `node-app/` | **8007** | http://localhost:8007 (web + worker) |
 | .NET 10 | `dotnet-app/` | **8008** | http://localhost:8008 (web + worker) |
+| Lapis | `lapis-app/` | **8009** | http://localhost:8009 (web + worker) |
 
 Most stacks run **two containers** (web + background worker) for a fair resource comparison. Welcome email is **mocked** everywhere (`[MOCK MAIL]` logs only — no SMTP).
 
@@ -284,6 +307,9 @@ cd ../node-app && docker compose up -d --build
 
 # .NET 10 (port 8008) — dotnet-web + dotnet-worker
 cd ../dotnet-app && docker compose up -d --build
+
+# Lapis (port 8009) — lapis-web + lapis-worker
+cd ../lapis-app && docker compose up -d --build
 ```
 
 Useful commands (from each app directory):

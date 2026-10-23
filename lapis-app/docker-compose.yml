@@ -1,0 +1,33 @@
+services:
+  lapis-web:
+    build: .
+    container_name: lapis-leads-web
+    command: ["web"]
+    ports:
+      - "8009:8009"
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-lapis_leads}
+      HTTP_PORT: "8009"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  lapis-worker:
+    build: .
+    container_name: lapis-leads-worker
+    command: ["worker"]
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-lapis_leads}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - lapis-web
+    restart: unless-stopped
