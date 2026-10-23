@@ -1,6 +1,6 @@
 # POC Lead Management Apps
 
-Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go, Deno, Bun, Rust, Node.js). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
+Proof-of-Concept web apps (Spring Boot, Pyramid, Django, Go, Deno, Bun, Rust, Node.js, .NET). Each includes Bootstrap 5 CRUD for leads, a background welcome-email simulation, and scheduled health/dummy jobs.
 
 Welcome emails are **simulated** (logged only; no SMTP).
 
@@ -14,6 +14,7 @@ Welcome emails are **simulated** (logged only; no SMTP).
 | Bun | `bun-app/` | http://localhost:8005 |
 | Rust | `rust-app/` | http://localhost:8006 |
 | Node.js | `node-app/` | http://localhost:8007 |
+| .NET 10 | `dotnet-app/` | http://localhost:8008 |
 
 ## Prerequisites
 
@@ -220,6 +221,24 @@ mise exec -- npm run web      # http://localhost:8007
 mise exec -- npm run worker
 ```
 
+## 9. .NET 10
+
+ASP.NET Core minimal APIs + MySqlConnector, same shared MySQL (`DB_*`). Defaults:
+
+| Variable | Default |
+|----------|---------|
+| `DB_HOST` | `host.docker.internal` |
+| `DB_PORT` | `3306` |
+| `DB_USERNAME` | `root` |
+| `DB_PASSWORD` | `password` |
+| `DB_NAME` | `dotnet_leads` |
+
+```bash
+cd dotnet-app
+mise exec -- dotnet run -- web      # http://localhost:8008
+mise exec -- dotnet run -- worker
+```
+
 ## Deploy with Docker Compose
 
 Each app has its own `Dockerfile` and `docker-compose.yml`. Ports do not overlap, so all can run on one host.
@@ -234,6 +253,7 @@ Each app has its own `Dockerfile` and `docker-compose.yml`. Ports do not overlap
 | Bun | `bun-app/` | **8005** | http://localhost:8005 (web + worker) |
 | Rust | `rust-app/` | **8006** | http://localhost:8006 (web + worker) |
 | Node.js | `node-app/` | **8007** | http://localhost:8007 (web + worker) |
+| .NET 10 | `dotnet-app/` | **8008** | http://localhost:8008 (web + worker) |
 
 Most stacks run **two containers** (web + background worker) for a fair resource comparison. Welcome email is **mocked** everywhere (`[MOCK MAIL]` logs only — no SMTP).
 
@@ -261,6 +281,9 @@ cd ../rust-app && docker compose up -d --build
 
 # Node.js (port 8007) — node-web + node-worker
 cd ../node-app && docker compose up -d --build
+
+# .NET 10 (port 8008) — dotnet-web + dotnet-worker
+cd ../dotnet-app && docker compose up -d --build
 ```
 
 Useful commands (from each app directory):
@@ -270,11 +293,11 @@ docker compose logs -f
 docker compose down
 ```
 
-SQLite data for Spring Boot / Pyramid is in named volumes (`springboot-data`, `pyramid-data`). Django, Go, Deno, Bun, Rust, and Node use the shared external MySQL (`DB_*` env vars; see each app’s `.env.example`).
+SQLite data for Spring Boot / Pyramid is in named volumes (`springboot-data`, `pyramid-data`). Most other apps use the shared external MySQL (`DB_*` env vars; see each app’s `.env.example`).
 
 ## Notes
 
 - Spring Boot / Pyramid SQLite files live under each app’s `data/` directory (or Docker volume).
-- Django / Go / Deno / Bun / Rust / Node expect a reachable MySQL/MariaDB; override `DB_HOST` if the DB is another Compose service (e.g. `gemtech_mariadb_dev` network alias).
+- MySQL-backed apps expect a reachable MySQL/MariaDB; override `DB_HOST` if the DB is another Compose service (e.g. `gemtech_mariadb_dev` network alias).
 - Use `mise exec -- <command>` if tools are not on your PATH after `mise install`.
 - Mail is mocked everywhere (`MockMailClient` / Django `locmem` backend) — safe for server demos.

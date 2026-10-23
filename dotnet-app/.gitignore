@@ -1,0 +1,6 @@
+bin/
+obj/
+.env
+.DS_Store
+*.user
+*.swp
